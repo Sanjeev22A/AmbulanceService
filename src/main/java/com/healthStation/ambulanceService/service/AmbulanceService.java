@@ -12,11 +12,12 @@ public interface AmbulanceService {
     List<Ambulance> getAllAmbulance();
     Optional<Ambulance> getAmbulanceById(Long id);
     Ambulance saveAmbulance(Ambulance ambulance);
+    Ambulance saveAmbulance(Ambulance ambulance,double latitude,double longitude);
     Ambulance updateAmbulance(Long id,Ambulance ambulanceDetails);
     void deleteAmbulance(Long id);
 
 
     List<Ambulance> findByStatus(AmbulanceStatusType status);
     List<Ambulance> findByType(AmbulanceType type);
-    List<Ambulance> findNearbyAmbulance(Point src,int count);
+    List<Ambulance> findNearbyAmbulance(int count);
 }

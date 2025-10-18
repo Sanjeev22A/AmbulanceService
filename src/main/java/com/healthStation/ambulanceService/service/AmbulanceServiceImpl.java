@@ -1,17 +1,19 @@
 package com.healthStation.ambulanceService.service;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.PrecisionModel;
+import com.healthStation.ambulanceService.utils.Deserializer;
+import com.healthStation.ambulanceService.utils.InfoClass;
+import org.locationtech.jts.geom.*;
 import com.healthStation.ambulanceService.model.Ambulance;
 import com.healthStation.ambulanceService.model.AmbulanceStatusType;
 import com.healthStation.ambulanceService.model.AmbulanceType;
 import com.healthStation.ambulanceService.repository.AmbulanceRepository;
+import com.healthStation.ambulanceService.utils.MyConfig;
 import jakarta.transaction.Transactional;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -21,12 +23,14 @@ import java.util.Optional;
 @Service
 public class AmbulanceServiceImpl implements AmbulanceService{
     ///This will act as a default argument for the ambulance
-    private final int ambulanceCapacity=1;
-
+    private final int ambulanceCapacity= InfoClass.ambulanceCapacity;
     ///This is the location creator for this service with floating point precision model and WGS 84 coordinate system
     private final GeometryFactory geometryFactory=new GeometryFactory(new PrecisionModel(),4326);
+
     @Autowired
     private AmbulanceRepository ambulanceRepository;
+
+    private final RestTemplate restTemplate= MyConfig.restTemplate();
 
     public List<Ambulance> getAllAmbulance(){
         return ambulanceRepository.findAll();
@@ -44,13 +48,21 @@ public class AmbulanceServiceImpl implements AmbulanceService{
         if(ambulance.getCapacity()==0){
             ambulance.setCapacity(ambulanceCapacity);
         }
+        if(ambulance.getLocation()==null){
+            /**
+             * Still Being checked
+             */
+        }
+
         //We will use the server side timestamp for the update time - for consistency and prevents tampering
         ambulance.setUpdatedAt(Instant.now());
 
         return ambulanceRepository.save(ambulance);
     }
 
-    public Ambulance saveAmbulane(Ambulance ambulance,double latitude,double longitude){
+    @Transactional
+    @Override
+    public Ambulance saveAmbulance(Ambulance ambulance,double latitude,double longitude){
         if(ambulance.getCapacity()==0){
             ambulance.setCapacity(ambulanceCapacity);
         }
@@ -92,7 +104,16 @@ public class AmbulanceServiceImpl implements AmbulanceService{
     }
 
     @Override
-    public List<Ambulance> findNearbyAmbulance(Point src,int count) {
+    public List<Ambulance> findNearbyAmbulance(int count){
+        try {
+            String t = restTemplate.getForObject(InfoClass.hospitalLocationEndpoint, String.class);
+            Point src = Deserializer.deserialize(t);
+            return findNearbyAmbulance(src, count);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    private List<Ambulance> findNearbyAmbulance(Point src,int count) {
         //Here the number of ambulance in the particular distance is we increment distance and repeat it until the number of ambulance is greater than count, then we return the count closest ambulances
         long distanceInMeters=500;
         List<Ambulance> nearby=new ArrayList<>();
@@ -113,6 +134,7 @@ public class AmbulanceServiceImpl implements AmbulanceService{
 
 
     }
+
 
 
 }
