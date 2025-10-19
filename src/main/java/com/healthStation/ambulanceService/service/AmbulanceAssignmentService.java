@@ -17,4 +17,5 @@ public interface AmbulanceAssignmentService {
     List<AmbulanceAssignment> getAssignmentByServiceType(String assignmentServiceType);
     AmbulanceAssignment updateAssignment(AmbulanceAssignment assignment);
     void deleteAssignment(Long id);
+    AmbulanceAssignment assignAmbulance(Long ambulanceId,Long requestId);
 }

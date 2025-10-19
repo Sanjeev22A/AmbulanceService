@@ -1,5 +1,9 @@
 package com.healthStation.ambulanceService.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.healthStation.ambulanceService.utils.PointDeserializer;
+import com.healthStation.ambulanceService.utils.PointSerializer;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.locationtech.jts.geom.Point;
@@ -14,7 +18,7 @@ public class Ambulance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="ambulance_id")
-    private long ambulanceId;
+    private Long ambulanceId;
 
     //This column must actually be a Foreign key
     //When Implementing the rest of the class do the following
@@ -26,6 +30,8 @@ public class Ambulance {
     @Column(name="driver_id")
     private Long driverId;
 
+    @JsonSerialize(using= PointSerializer.class)
+    @JsonDeserialize(using= PointDeserializer.class)
     @Column(columnDefinition = "geometry(Point,4326)")
     private Point location;
 

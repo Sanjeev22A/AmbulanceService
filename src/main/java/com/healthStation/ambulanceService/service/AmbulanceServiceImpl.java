@@ -1,6 +1,7 @@
 package com.healthStation.ambulanceService.service;
 import com.healthStation.ambulanceService.utils.Deserializer;
 import com.healthStation.ambulanceService.utils.InfoClass;
+import com.healthStation.ambulanceService.utils.Location;
 import org.locationtech.jts.geom.*;
 import com.healthStation.ambulanceService.model.Ambulance;
 import com.healthStation.ambulanceService.model.AmbulanceStatusType;
@@ -45,39 +46,61 @@ public class AmbulanceServiceImpl implements AmbulanceService{
     @Transactional
     @Override
     public Ambulance saveAmbulance(Ambulance ambulance) {
-        if(ambulance.getCapacity()==0){
-            ambulance.setCapacity(ambulanceCapacity);
-        }
-        if(ambulance.getLocation()==null){
-            /**
-             * Still Being checked
-             */
-        }
+        try {
+            if (ambulance.getCapacity() == 0) {
+                ambulance.setCapacity(ambulanceCapacity);
+            }
+            if (ambulance.getLocation() == null) {
+                String t = MyConfig.restTemplate().getForObject(InfoClass.hospitalLocationEndpoint, String.class);
+                Point p = Deserializer.deserialize(t);
+                com.healthStation.ambulanceService.utils.Location loc = new Location(p);
+                ambulance.setLocation(loc.getHospitalCoordinate());
+            }
+            if(ambulance.getType()==null){
+                ambulance.setType(AmbulanceType.BASIC);
+            }
+            if(ambulance.getStatus()==null){
+                ambulance.setStatus(AmbulanceStatusType.AVAILABLE);
+            }
+            //We will use the server side timestamp for the update time - for consistency and prevents tampering
+            ambulance.setUpdatedAt(Instant.now());
 
-        //We will use the server side timestamp for the update time - for consistency and prevents tampering
-        ambulance.setUpdatedAt(Instant.now());
+            return ambulanceRepository.save(ambulance);
+        } catch (Exception e) {
 
-        return ambulanceRepository.save(ambulance);
+            return null;
+        }
     }
 
     @Transactional
     @Override
     public Ambulance saveAmbulance(Ambulance ambulance,double latitude,double longitude){
+
         if(ambulance.getCapacity()==0){
             ambulance.setCapacity(ambulanceCapacity);
+        }
+        if(ambulance.getType()==null){
+            ambulance.setType(AmbulanceType.BASIC);
+        }
+        if(ambulance.getStatus()==null){
+            ambulance.setStatus(AmbulanceStatusType.AVAILABLE);
         }
         Point location=geometryFactory.createPoint(new Coordinate(latitude,longitude));
         ambulance.setLocation(location);
         ambulance.setUpdatedAt(Instant.now());
-
-        return ambulanceRepository.save(ambulance);
+        System.out.println("Invoking save in repo");
+        Ambulance temp=ambulanceRepository.save(ambulance);
+        System.out.println("Saved");
+        return temp;
 
     }
 
     @Transactional
     @Override
     public Ambulance updateAmbulance(Long id, Ambulance ambulanceDetails) {
+
         return ambulanceRepository.findById(id).map(ambulance -> {
+            ambulance.setUpdatedAt(Instant.now());
             ambulance.setStatus(ambulanceDetails.getStatus());
             ambulance.setType(ambulanceDetails.getType());
             ambulance.setCapacity(ambulanceDetails.getCapacity());
@@ -89,8 +112,12 @@ public class AmbulanceServiceImpl implements AmbulanceService{
 
     @Transactional
     @Override
-    public void deleteAmbulance(Long id) {
+    public Boolean deleteAmbulance(Long id) {
+        if(!ambulanceRepository.existsById(id)){
+            return false;
+        }
         ambulanceRepository.deleteById(id);
+        return !ambulanceRepository.existsById(id);
     }
 
     @Override
@@ -135,6 +162,46 @@ public class AmbulanceServiceImpl implements AmbulanceService{
 
     }
 
+    @Override
+    public Ambulance registerAmbulance(Ambulance ambulance){
+
+        try{
+
+            if(ambulance.getAmbulanceId()!=null && ambulance.getAmbulanceId()!=0) {
+                Optional<Ambulance> holder = this.getAmbulanceById(ambulance.getAmbulanceId());
+                if (holder.isEmpty()) {
+
+                    return saveAmbulance(ambulance);
+                }
+                return getDummyAmbulance("The ambulance already exist, so cant register");
+            }else{
+
+                return saveAmbulance(ambulance);
+            }
+
+        } catch (Exception e) {
+
+            System.out.println("Error when registering");
+            return null;
+        }
+    }
+
+    // Dummy object for testing
+    private Ambulance getDummyAmbulance(String errorType) {
+        Ambulance dummy = new Ambulance();
+        dummy.setAmbulanceId(-1L);
+        dummy.setDriverId(0L);
+        dummy.setCapacity(0);
+        dummy.setType(AmbulanceType.BASIC);
+        dummy.setStatus(AmbulanceStatusType.OFFLINE);
+        dummy.setUpdatedAt(Instant.now());
+
+        GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+        dummy.setLocation(geometryFactory.createPoint(new Coordinate(0.0, 0.0)));
+
+        System.out.println("Returning dummy ambulance due to error: " + errorType);
+        return dummy;
+    }
 
 
 }

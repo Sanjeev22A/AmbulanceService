@@ -19,4 +19,5 @@ public interface AmbulanceRepository extends JpaRepository<Ambulance,Long> {
 
     List<Ambulance> findByStatus(AmbulanceStatusType status);
     List<Ambulance> findByType(AmbulanceType type);
+    List<Ambulance> findByDriverId(Long driverId);
 }

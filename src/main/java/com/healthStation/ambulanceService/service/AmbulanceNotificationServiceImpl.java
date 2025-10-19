@@ -5,6 +5,7 @@ import com.healthStation.ambulanceService.model.AmbulanceNotificationStatusType;
 import com.healthStation.ambulanceService.model.AmbulanceRequest;
 import com.healthStation.ambulanceService.repository.AmbulanceNotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class AmbulanceNotificationServiceImpl implements AmbulanceNotificationService{
 
     @Autowired

@@ -15,5 +15,5 @@ public interface AmbulanceNotificationRepository extends JpaRepository<Ambulance
     List<AmbulanceNotification> findByNotificationStatus(AmbulanceNotificationStatusType status);
 
 
-    List<AmbulanceNotification> findByAmbulanceId(Long ambulanceId);
+    List<AmbulanceNotification> findByAmbulance_AmbulanceId(Long ambulanceId);
 }

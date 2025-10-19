@@ -1,5 +1,9 @@
 package com.healthStation.ambulanceService.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.healthStation.ambulanceService.utils.PointDeserializer;
+import com.healthStation.ambulanceService.utils.PointSerializer;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.Type;
@@ -25,9 +29,13 @@ public class AmbulanceRequest {
     @Column(name="patient_id")
     private Long patientId;
 
+    @JsonSerialize(using= PointSerializer.class)
+    @JsonDeserialize(using= PointDeserializer.class)
     @Column(name = "pickup_location", columnDefinition = "geometry(Point,4326)")
     private Point pickupLocation;
 
+    @JsonSerialize(using= PointSerializer.class)
+    @JsonDeserialize(using= PointDeserializer.class)
     @Column(name="destination_location",columnDefinition = "geometry(Point,4326)")
     private Point destinationLocation;
 

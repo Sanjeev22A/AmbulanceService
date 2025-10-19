@@ -14,10 +14,12 @@ public interface AmbulanceService {
     Ambulance saveAmbulance(Ambulance ambulance);
     Ambulance saveAmbulance(Ambulance ambulance,double latitude,double longitude);
     Ambulance updateAmbulance(Long id,Ambulance ambulanceDetails);
-    void deleteAmbulance(Long id);
+    Boolean deleteAmbulance(Long id);
 
 
     List<Ambulance> findByStatus(AmbulanceStatusType status);
     List<Ambulance> findByType(AmbulanceType type);
     List<Ambulance> findNearbyAmbulance(int count);
+
+    Ambulance registerAmbulance(Ambulance ambulance);
 }

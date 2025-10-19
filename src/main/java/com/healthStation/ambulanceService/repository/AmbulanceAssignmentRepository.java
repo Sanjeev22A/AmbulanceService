@@ -9,9 +9,10 @@ import java.util.List;
 
 public interface AmbulanceAssignmentRepository extends JpaRepository<AmbulanceAssignment,Long> {
 
-    List<AmbulanceAssignment> findAmbulanceRequest(AmbulanceRequest request);
+    List<AmbulanceAssignment> findByAmbulanceRequest(AmbulanceRequest request);
 
     List<AmbulanceAssignment> findByAmbulanceServiceType(AmbulanceServiceType serviceType);
 
-    List<AmbulanceAssignment> findByAmbulanceId(Long ambulanceId);
+    List<AmbulanceAssignment> findByAssignmentId(Long ambulanceId);
+    Boolean existsByAmbulanceRequest_RequestId(Long requestId);
 }

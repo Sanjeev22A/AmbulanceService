@@ -13,7 +13,7 @@ public class AmbulanceAssignment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="assignment_id")
-    private Long id;
+    private Long assignmentId;
 
     //Foreign key
     @OneToOne(fetch=FetchType.LAZY)

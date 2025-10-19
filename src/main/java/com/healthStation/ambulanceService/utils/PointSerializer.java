@@ -10,12 +10,12 @@ import java.io.IOException;
 public class PointSerializer extends JsonSerializer<Point> {
     @Override
     public void serialize(Point point, JsonGenerator gen, SerializerProvider serializer) throws IOException{
-        if(point==null){
+        if (point == null) {
             gen.writeNull();
+            return;
         }
-
         gen.writeStartObject();
-        gen.writeStringField("type","Point");
+        gen.writeStringField("type", "Point");
         gen.writeArrayFieldStart("coordinates");
         gen.writeNumber(point.getX());
         gen.writeNumber(point.getY());
