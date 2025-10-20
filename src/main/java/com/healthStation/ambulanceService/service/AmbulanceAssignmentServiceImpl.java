@@ -67,8 +67,8 @@ public class AmbulanceAssignmentServiceImpl implements AmbulanceAssignmentServic
     }
 
     @Override
-    public AmbulanceAssignment assignAmbulance(Long ambulanceId, Long requestId) {
-        try {
+    public AmbulanceAssignment assignAmbulance(Long ambulanceId, Long requestId) throws AmbulanceNotAvailableException, AmbulanceRequestInvalidException {
+
             Ambulance ambulance = ambulanceRepository.findById(ambulanceId)
                     .orElseThrow(() -> new IllegalArgumentException("Ambulance does not exist"));
 
@@ -100,9 +100,7 @@ public class AmbulanceAssignmentServiceImpl implements AmbulanceAssignmentServic
 
             return savedAssignment;
 
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
     }
 
 }

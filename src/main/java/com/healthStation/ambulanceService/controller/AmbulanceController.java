@@ -1,6 +1,9 @@
 package com.healthStation.ambulanceService.controller;
 
+import com.healthStation.ambulanceService.Exceptions.AmbulanceRequestNotFoundException;
 import com.healthStation.ambulanceService.model.Ambulance;
+import com.healthStation.ambulanceService.model.AmbulanceRequest;
+import com.healthStation.ambulanceService.model.AmbulanceRequestStatus;
 import com.healthStation.ambulanceService.service.AmbulanceAssignmentService;
 import com.healthStation.ambulanceService.service.AmbulanceNotificationService;
 import com.healthStation.ambulanceService.service.AmbulanceRequestService;
@@ -33,6 +36,30 @@ public class AmbulanceController {
 
     @Autowired
     AmbulanceRequestService ambulanceRequestService;
+    ///Getting hospital ID from hospital name
+    @GetMapping("/hospital/Id/{name}")
+    public ResponseEntity<Long> getHospitalId(@PathVariable String name){
+        //For our application we have just one hospital so we have hardcoded its id.
+        return ResponseEntity.status(HttpStatus.OK).body(33L);
+    }
+    ///Getting hospital Location, again for our application since there is only one hospital it has been hardcoded.
+    @GetMapping("/hospital/hospitalLocation")
+    public ResponseEntity<Location> getHospitalLocation(){
+
+        GeometryFactory geometryFactory=new GeometryFactory(new PrecisionModel(),4326);
+
+        Coordinate hospitalCoordinate=new Coordinate(80.207,13.0827);
+
+        Point hospitalPoint=geometryFactory.createPoint(hospitalCoordinate);
+        Location hospitalLoc=new Location(hospitalPoint);
+
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(hospitalLoc);
+
+
+    }
 
     ///Ambulance CRUDS here
     @PostMapping("/ambulance/register")
@@ -76,23 +103,7 @@ public class AmbulanceController {
         }
     }
 
-    @GetMapping("/hospital/hospitalLocation")
-    public ResponseEntity<Location> getHospitalLocation(){
 
-        GeometryFactory geometryFactory=new GeometryFactory(new PrecisionModel(),4326);
-
-        Coordinate hospitalCoordinate=new Coordinate(80.207,13.0827);
-
-        Point hospitalPoint=geometryFactory.createPoint(hospitalCoordinate);
-        Location hospitalLoc=new Location(hospitalPoint);
-
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(hospitalLoc);
-
-
-    }
 
     @DeleteMapping("/ambulance/{id}")
     public ResponseEntity<String> deleteAmbulance(@PathVariable Long id){
@@ -117,7 +128,102 @@ public class AmbulanceController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    ///End of Ambulance CRUD Operations
+    ///-------------------------------------------------
+    ///Ambulance Request Controller from here
 
+    @PostMapping("/ambulanceRequest/Request")
+    public ResponseEntity<AmbulanceRequest> requestAmbulance(@RequestBody AmbulanceRequest ambulanceRequest){
+        try {
+            AmbulanceRequest ambulanceRequest1=ambulanceRequestService.createRequest(ambulanceRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(ambulanceRequest1);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+    }
+
+    @GetMapping("/ambulanceRequest/get/{requestId}")
+    public ResponseEntity<AmbulanceRequest> getAmbulanceRequestById(@PathVariable Long requestId){
+        try{
+            Optional<AmbulanceRequest> ambulanceRequest=ambulanceRequestService.getRequestById(requestId);
+            return ambulanceRequest.map(request -> ResponseEntity.status(HttpStatus.OK).body(request)).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/ambulanceRequest/getAll")
+    public ResponseEntity<List<AmbulanceRequest>> getAllAmbulanceRequest(){
+        try{
+            List<AmbulanceRequest> ambulanceRequests=ambulanceRequestService.getAllRequest();
+            return ResponseEntity.status(HttpStatus.OK).body(ambulanceRequests);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/ambulanceRequest/getByPaitentId/{id}")
+    public ResponseEntity<List<AmbulanceRequest>> getAmbulanceRequestByPaitentId(@PathVariable Long id){
+        try{
+            List<AmbulanceRequest> ambulanceRequests=ambulanceRequestService.getRequestByPatientId(id);
+            return ResponseEntity.status(HttpStatus.OK).body(ambulanceRequests);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    @GetMapping("/ambulanceRequest/getByStatus/{ambulanceRequestStatus}")
+    public ResponseEntity<?> getAmbulanceRequestByStatus(@PathVariable String ambulanceRequestStatus){
+        try{
+            List<AmbulanceRequest> ambulanceRequests=ambulanceRequestService.getRequestByStatus(ambulanceRequestStatus);
+            return ResponseEntity.status(HttpStatus.OK).body(ambulanceRequests);
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/ambulanceRequest/deleteRequest/{requestId}")
+    public ResponseEntity<String> deleteAmbulanceRequest(@PathVariable Long requestId){
+        try{
+            if(ambulanceRequestService.ambulanceRequestExistsById(requestId)) {
+                ambulanceRequestService.deleteRequest(requestId);
+                return ResponseEntity.status(HttpStatus.OK).body("Ambulance request has been deleted");
+            }else{
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("The ambulance request doesnt exist");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PatchMapping("/ambulanceRequest/updateRequest/{requestId}")
+    public ResponseEntity<AmbulanceRequest> updateAmbulanceRequest(@PathVariable Long requestId,@RequestBody AmbulanceRequest ambulanceRequest){
+        try{
+            AmbulanceRequest request=ambulanceRequestService.updateRequest(requestId,ambulanceRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(request);
+        } catch (AmbulanceRequestNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    @PatchMapping("/ambulanceRequest/updateRequestStatus/{requestId}")
+    public ResponseEntity<String> updateAmbulanceRequestStatus(@PathVariable Long requestId,@RequestBody String requestStatus){
+        try{
+            AmbulanceRequest request=ambulanceRequestService.updateRequestStatus(requestId,requestStatus);
+            return ResponseEntity.status(HttpStatus.OK).body("Request Status has been updated");
+        }catch (AmbulanceRequestNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ambulance Request not found");
+        }catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not a valid Request status");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    ///End of Ambulance Request CRUD Operations
+    ///-------------------------------------------------
     ///Ambulance Assignment Request from here
 
 

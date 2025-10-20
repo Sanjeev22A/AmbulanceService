@@ -1,5 +1,7 @@
 package com.healthStation.ambulanceService.service;
 
+import com.healthStation.ambulanceService.Exceptions.AmbulanceNotAvailableException;
+import com.healthStation.ambulanceService.Exceptions.AmbulanceRequestInvalidException;
 import com.healthStation.ambulanceService.model.AmbulanceAssignment;
 import com.healthStation.ambulanceService.model.AmbulanceRequest;
 
@@ -17,5 +19,5 @@ public interface AmbulanceAssignmentService {
     List<AmbulanceAssignment> getAssignmentByServiceType(String assignmentServiceType);
     AmbulanceAssignment updateAssignment(AmbulanceAssignment assignment);
     void deleteAssignment(Long id);
-    AmbulanceAssignment assignAmbulance(Long ambulanceId,Long requestId);
+    AmbulanceAssignment assignAmbulance(Long ambulanceId,Long requestId) throws AmbulanceNotAvailableException, AmbulanceRequestInvalidException;
 }
