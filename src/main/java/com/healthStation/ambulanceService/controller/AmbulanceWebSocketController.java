@@ -21,7 +21,9 @@ import java.util.Optional;
 @Controller
 @RequiredArgsConstructor
 public class AmbulanceWebSocketController {
-
+    ///I dont feel confident in this, so might change it as a bit of it is gpt generated and one must never trust AI (Cool Coding>> vibe Coding)
+    /// Use the below link as reference and look up
+    //https://www.geeksforgeeks.org/advance-java/using-websocket-to-build-an-interactive-web-application-in-spring-boot/
     private final SimpMessagingTemplate messageTemplate;
 
     private final AmbulanceRequestRepository ambulanceRequestRepository;
