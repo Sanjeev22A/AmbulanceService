@@ -1,4 +1,4 @@
-package com.healthStation.ambulanceService.MessafeDTOS;
+package com.healthStation.ambulanceService.MessageDTOS;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

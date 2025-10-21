@@ -1,6 +1,5 @@
-package com.healthStation.ambulanceService.MessafeDTOS;
+package com.healthStation.ambulanceService.MessageDTOS;
 
-import com.healthStation.ambulanceService.model.AmbulanceServiceType;
 import lombok.Data;
 import org.locationtech.jts.geom.Point;
 

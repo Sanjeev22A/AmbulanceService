@@ -1,15 +1,13 @@
 package com.healthStation.ambulanceService.controller;
 
-import com.healthStation.ambulanceService.MessafeDTOS.AmbulanceNotificationMessage;
-import com.healthStation.ambulanceService.MessafeDTOS.AmbulanceResponseMessage;
-import com.healthStation.ambulanceService.MessafeDTOS.RequestUpdateMessage;
+import com.healthStation.ambulanceService.MessageDTOS.AmbulanceNotificationMessage;
+import com.healthStation.ambulanceService.MessageDTOS.AmbulanceResponseMessage;
+import com.healthStation.ambulanceService.MessageDTOS.RequestUpdateMessage;
 import com.healthStation.ambulanceService.model.*;
 import com.healthStation.ambulanceService.repository.AmbulanceNotificationRepository;
 import com.healthStation.ambulanceService.repository.AmbulanceRequestRepository;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
