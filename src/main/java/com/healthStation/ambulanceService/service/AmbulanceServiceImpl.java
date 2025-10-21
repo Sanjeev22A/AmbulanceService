@@ -1,4 +1,5 @@
 package com.healthStation.ambulanceService.service;
+import com.healthStation.ambulanceService.Exceptions.AmbulanceNotFoundException;
 import com.healthStation.ambulanceService.utils.Deserializer;
 import com.healthStation.ambulanceService.utils.InfoClass;
 import com.healthStation.ambulanceService.utils.Location;
@@ -12,7 +13,6 @@ import jakarta.transaction.Transactional;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -126,26 +126,30 @@ public class AmbulanceServiceImpl implements AmbulanceService{
     }
 
     @Override
+    public List<Ambulance> findByDriverId(Long driverId){
+        return ambulanceRepository.findByDriverId(driverId);
+    }
+    @Override
     public List<Ambulance> findByType(AmbulanceType type) {
         return ambulanceRepository.findByType(type);
     }
 
     @Override
-    public List<Ambulance> findNearbyAmbulance(int count){
+    public List<Ambulance> findNearbyAmbulance(int count, AmbulanceType serviceType, AmbulanceStatusType status){
         try {
             String t = restTemplate.getForObject(InfoClass.hospitalLocationEndpoint, String.class);
             Point src = Deserializer.deserialize(t);
-            return findNearbyAmbulance(src, count);
+            return findNearbyAmbulance(src, count,serviceType,status);
         } catch (Exception e) {
             return null;
         }
     }
-    private List<Ambulance> findNearbyAmbulance(Point src,int count) {
+    private List<Ambulance> findNearbyAmbulance(Point src, int count, AmbulanceType serviceType,AmbulanceStatusType status) {
         //Here the number of ambulance in the particular distance is we increment distance and repeat it until the number of ambulance is greater than count, then we return the count closest ambulances
         long distanceInMeters=500;
         List<Ambulance> nearby=new ArrayList<>();
         while(nearby.size()<count){
-            nearby=ambulanceRepository.findWithinDistance(src,distanceInMeters);
+            nearby=ambulanceRepository.findWithinDistance(src,distanceInMeters,serviceType,status);
             distanceInMeters*=2;
             if(distanceInMeters>50000){
                 //An ambulance cant travel more than 50Km to get a patient
@@ -185,7 +189,18 @@ public class AmbulanceServiceImpl implements AmbulanceService{
             return null;
         }
     }
+    @Override
+    public Ambulance pollAmbulanceLocation(Long ambulanceId, Point location) throws AmbulanceNotFoundException {
+        Optional<Ambulance> holder=ambulanceRepository.findById(ambulanceId);
+        if(holder.isPresent()){
+            Ambulance ambulance=holder.get();
+            ambulance.setLocation(location);
+            return ambulanceRepository.save(ambulance);
 
+        }else{
+            throw new AmbulanceNotFoundException("The ambulance requested b the ID doesnt exist");
+        }
+    }
     // Dummy object for testing
     private Ambulance getDummyAmbulance(String errorType) {
         Ambulance dummy = new Ambulance();

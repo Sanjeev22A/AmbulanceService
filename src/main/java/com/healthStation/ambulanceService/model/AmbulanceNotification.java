@@ -7,7 +7,9 @@ import java.time.Instant;
 
 @Data
 @Entity
-@Table(name="Ambulance_Notification")
+@Table(name="Ambulance_Notification",
+        uniqueConstraints= @UniqueConstraint(columnNames = {"request_id", "ambulance_id"})
+)
 public class AmbulanceNotification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

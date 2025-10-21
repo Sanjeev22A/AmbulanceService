@@ -1,9 +1,11 @@
 package com.healthStation.ambulanceService.controller;
 
+import com.healthStation.ambulanceService.Exceptions.AmbulanceNotFoundException;
 import com.healthStation.ambulanceService.Exceptions.AmbulanceRequestNotFoundException;
 import com.healthStation.ambulanceService.model.Ambulance;
 import com.healthStation.ambulanceService.model.AmbulanceRequest;
 import com.healthStation.ambulanceService.model.AmbulanceRequestStatus;
+import com.healthStation.ambulanceService.model.PointDTO;
 import com.healthStation.ambulanceService.service.AmbulanceAssignmentService;
 import com.healthStation.ambulanceService.service.AmbulanceNotificationService;
 import com.healthStation.ambulanceService.service.AmbulanceRequestService;
@@ -103,7 +105,15 @@ public class AmbulanceController {
         }
     }
 
-
+    @GetMapping("/ambulance/getByDriverId/{id}")
+    public ResponseEntity<List<Ambulance>> getAmbulanceByDriverId(@PathVariable Long id){
+        try{
+            List<Ambulance> ambulanceList=ambulanceService.findByDriverId(id);
+            return ResponseEntity.status(HttpStatus.OK).body(ambulanceList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
     @DeleteMapping("/ambulance/{id}")
     public ResponseEntity<String> deleteAmbulance(@PathVariable Long id){
@@ -125,6 +135,21 @@ public class AmbulanceController {
             Ambulance holder=ambulanceService.updateAmbulance(id,ambulance);
             return ResponseEntity.status(HttpStatus.OK).body(holder);
         } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    @PatchMapping("/ambulance/poll/location/{id}")
+    public ResponseEntity<?> pollAmbulanceLocation(@PathVariable Long id,@RequestBody PointDTO location){
+        try{
+            GeometryFactory geometryFactory=new GeometryFactory(new PrecisionModel(),4326);
+            Point loc=geometryFactory.createPoint(
+                    new Coordinate(location.getCoordinates()[0],location.getCoordinates()[1])
+            );
+            Ambulance holder=ambulanceService.pollAmbulanceLocation(id,loc);
+            return ResponseEntity.status(HttpStatus.OK).body(holder);
+        }catch(AmbulanceNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Requested Ambulance by ambulanceID wasnt found");
+        }catch(Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -162,6 +187,7 @@ public class AmbulanceController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
     @GetMapping("/ambulanceRequest/getByPaitentId/{id}")
     public ResponseEntity<List<AmbulanceRequest>> getAmbulanceRequestByPaitentId(@PathVariable Long id){
@@ -222,6 +248,8 @@ public class AmbulanceController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
     ///End of Ambulance Request CRUD Operations
     ///-------------------------------------------------
     ///Ambulance Assignment Request from here

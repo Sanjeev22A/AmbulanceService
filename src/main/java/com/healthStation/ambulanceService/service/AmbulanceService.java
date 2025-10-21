@@ -1,5 +1,6 @@
 package com.healthStation.ambulanceService.service;
 
+import com.healthStation.ambulanceService.Exceptions.AmbulanceNotFoundException;
 import com.healthStation.ambulanceService.model.Ambulance;
 import com.healthStation.ambulanceService.model.AmbulanceStatusType;
 import com.healthStation.ambulanceService.model.AmbulanceType;
@@ -18,8 +19,15 @@ public interface AmbulanceService {
 
 
     List<Ambulance> findByStatus(AmbulanceStatusType status);
+
+    List<Ambulance> findByDriverId(Long driverId);
+
     List<Ambulance> findByType(AmbulanceType type);
-    List<Ambulance> findNearbyAmbulance(int count);
+
+
+    List<Ambulance> findNearbyAmbulance(int count, AmbulanceType serviceType, AmbulanceStatusType status);
 
     Ambulance registerAmbulance(Ambulance ambulance);
+
+    Ambulance pollAmbulanceLocation(Long ambulanceId, Point location) throws AmbulanceNotFoundException;
 }
