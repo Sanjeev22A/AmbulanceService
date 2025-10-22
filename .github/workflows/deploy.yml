@@ -1,11 +1,9 @@
-## Here we specify the name of the project
 name: Cloud Project
 
-##Next we define the events on which a particular job must run. We want to deploy our application whenever we push a code to our master branch
 on:
   push:
     branches: [ master ]
-## In the job we have created , we will first pull our code using the checkout, then setup jdk, and then build using maven
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,8 +16,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+
       - name: Build with Maven
         run: mvn clean package -DskipTests
-
-      
-    
