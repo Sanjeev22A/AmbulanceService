@@ -2,8 +2,10 @@ package com.healthStation.ambulanceService.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.healthStation.ambulanceService.Exceptions.AmbulanceRequestNotFoundException;
+import com.healthStation.ambulanceService.controller.AmbulanceWebSocketController;
 import com.healthStation.ambulanceService.model.AmbulanceRequest;
 import com.healthStation.ambulanceService.model.AmbulanceRequestStatus;
+import com.healthStation.ambulanceService.repository.AmbulanceRepository;
 import com.healthStation.ambulanceService.repository.AmbulanceRequestRepository;
 import com.healthStation.ambulanceService.utils.Deserializer;
 import com.healthStation.ambulanceService.utils.InfoClass;
@@ -25,6 +27,10 @@ public class AmbulanceRequestServiceImpl implements AmbulanceRequestService{
     @Autowired
     AmbulanceRequestRepository ambulanceRequestRepository;
 
+
+
+
+
     @Override
     public AmbulanceRequest createRequest(AmbulanceRequest request) throws JsonProcessingException {
         ///here the hospital name is hardcoded, since there is only one hospital
@@ -35,6 +41,7 @@ public class AmbulanceRequestServiceImpl implements AmbulanceRequestService{
         Point src = Deserializer.deserialize(t);
         request.setDestinationLocation(src);
         AmbulanceRequest holder=ambulanceRequestRepository.save(request);
+
         return holder;
 
     }

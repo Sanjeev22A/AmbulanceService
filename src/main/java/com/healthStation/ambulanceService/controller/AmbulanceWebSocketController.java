@@ -28,8 +28,9 @@ public class AmbulanceWebSocketController {
 
     private final AmbulanceNotificationRepository ambulanceNotificationRepository;
 
-    public void notifyNearbyAmbulances(AmbulanceRequest request, List<Long> nearbyAmbulanceIds){
-        for(Long id:nearbyAmbulanceIds){
+    public void notifyNearbyAmbulances(AmbulanceRequest request, List<Ambulance> nearbyAmbulances){
+        for(Ambulance a:nearbyAmbulances){
+            Long id=a.getAmbulanceId();
             AmbulanceNotificationMessage msg=new AmbulanceNotificationMessage();
             msg.setRequestId(request.getRequestId());
             msg.setLocation(request.getPickupLocation());

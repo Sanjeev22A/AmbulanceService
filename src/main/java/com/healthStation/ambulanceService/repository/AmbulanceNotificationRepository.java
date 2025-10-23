@@ -22,6 +22,6 @@ public interface AmbulanceNotificationRepository extends JpaRepository<Ambulance
 
     //Modifying means Delete or update query and not select query
     @Modifying
-    @Query("update AmbulanceNotification n set n.notificationStatus = :status, n.responedAt = CURRENT_TIMESTAMP where n.ambulance.id = :ambulance.id and n.ambulanceRequest.id = :requestId")
+    @Query("update AmbulanceNotification n set n.notificationStatus = :status, n.respondedAt = CURRENT_TIMESTAMP where n.ambulance.id = :ambulanceId and n.ambulanceRequest.id = :requestId")
     void updateStatus(@Param("requestId") Long requestId,@Param("ambulanceId") Long ambulanceId,@Param("status") AmbulanceNotificationStatusType notificationStatusType);
 }

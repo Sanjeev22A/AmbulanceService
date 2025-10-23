@@ -2,15 +2,14 @@ package com.healthStation.ambulanceService.controller;
 //Fake Push
 import com.healthStation.ambulanceService.Exceptions.AmbulanceNotFoundException;
 import com.healthStation.ambulanceService.Exceptions.AmbulanceRequestNotFoundException;
-import com.healthStation.ambulanceService.model.Ambulance;
-import com.healthStation.ambulanceService.model.AmbulanceRequest;
-import com.healthStation.ambulanceService.model.AmbulanceRequestStatus;
-import com.healthStation.ambulanceService.model.PointDTO;
+import com.healthStation.ambulanceService.model.*;
 import com.healthStation.ambulanceService.service.AmbulanceAssignmentService;
 import com.healthStation.ambulanceService.service.AmbulanceNotificationService;
 import com.healthStation.ambulanceService.service.AmbulanceRequestService;
 import com.healthStation.ambulanceService.service.AmbulanceService;
+import com.healthStation.ambulanceService.utils.InfoClass;
 import com.healthStation.ambulanceService.utils.Location;
+import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -19,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,6 +35,9 @@ public class AmbulanceController {
 
     @Autowired
     AmbulanceNotificationService ambulanceNotificationService;
+
+    @Autowired
+    AmbulanceWebSocketController ambulanceWebSocketController;
 
     @Autowired
     AmbulanceRequestService ambulanceRequestService;
@@ -78,7 +81,7 @@ public class AmbulanceController {
         }
     }
 
-    @GetMapping("/ambulance/get/all")
+    @GetMapping("/ambulance/getAll")
     public ResponseEntity<List<Ambulance>> getAllAmbulance(){
         try {
             List<Ambulance> ambulanceList = ambulanceService.getAllAmbulance();
@@ -157,12 +160,23 @@ public class AmbulanceController {
     ///-------------------------------------------------
     ///Ambulance Request Controller from here
 
-    @PostMapping("/ambulanceRequest/Request")
-    public ResponseEntity<AmbulanceRequest> requestAmbulance(@RequestBody AmbulanceRequest ambulanceRequest){
+    @PostMapping("/ambulanceRequest/Request/{requestType}")
+    public ResponseEntity<AmbulanceRequest> requestAmbulance(@RequestBody AmbulanceRequest ambulanceRequest,@PathVariable String requestType){
         try {
+            AmbulanceType ambulanceType=AmbulanceType.valueOf(requestType.toUpperCase());
+
+
+            List<Ambulance> ambulanceList=ambulanceService.findNearbyAmbulance(ambulanceRequest.getPickupLocation(),InfoClass.ambulanceCount,ambulanceType,AmbulanceStatusType.AVAILABLE);
+
+            ambulanceWebSocketController.notifyNearbyAmbulances(ambulanceRequest,ambulanceList);
             AmbulanceRequest ambulanceRequest1=ambulanceRequestService.createRequest(ambulanceRequest);
             return ResponseEntity.status(HttpStatus.OK).body(ambulanceRequest1);
-        }catch (Exception e){
+        }catch (IllegalArgumentException e){
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        catch (Exception e){
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 

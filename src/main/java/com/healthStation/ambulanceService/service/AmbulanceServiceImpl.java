@@ -67,8 +67,8 @@ public class AmbulanceServiceImpl implements AmbulanceService{
 
             return ambulanceRepository.save(ambulance);
         } catch (Exception e) {
+            throw new RuntimeException(e);
 
-            return null;
         }
     }
 
@@ -134,17 +134,9 @@ public class AmbulanceServiceImpl implements AmbulanceService{
         return ambulanceRepository.findByType(type);
     }
 
+
     @Override
-    public List<Ambulance> findNearbyAmbulance(int count, AmbulanceType serviceType, AmbulanceStatusType status){
-        try {
-            String t = restTemplate.getForObject(InfoClass.hospitalLocationEndpoint, String.class);
-            Point src = Deserializer.deserialize(t);
-            return findNearbyAmbulance(src, count,serviceType,status);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-    private List<Ambulance> findNearbyAmbulance(Point src, int count, AmbulanceType serviceType,AmbulanceStatusType status) {
+    public  List<Ambulance> findNearbyAmbulance(Point src, int count, AmbulanceType serviceType,AmbulanceStatusType status) {
         //Here the number of ambulance in the particular distance is we increment distance and repeat it until the number of ambulance is greater than count, then we return the count closest ambulances
         long distanceInMeters=500;
         List<Ambulance> nearby=new ArrayList<>();

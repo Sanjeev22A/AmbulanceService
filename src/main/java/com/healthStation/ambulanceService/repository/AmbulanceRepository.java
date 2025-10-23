@@ -14,8 +14,8 @@ import java.util.List;
 public interface AmbulanceRepository extends JpaRepository<Ambulance,Long> {
     @Query(
             value = "SELECT * FROM ambulance a " +
-                    "WHERE ST_DWithin(a.location::geography, :src::geography, :distance) " +
-                    "AND a.service_type = CAST(:type AS VARCHAR) " +
+                    "WHERE ST_DWithin(a.location::geography, CAST(:src AS geography), :distance) " +
+                    "AND a.type = CAST(:type AS VARCHAR) " +
                     "AND a.status = CAST(:status AS VARCHAR)",
             nativeQuery = true
     )

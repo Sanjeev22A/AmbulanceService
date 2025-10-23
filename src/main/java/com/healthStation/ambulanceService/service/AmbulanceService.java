@@ -25,7 +25,7 @@ public interface AmbulanceService {
     List<Ambulance> findByType(AmbulanceType type);
 
 
-    List<Ambulance> findNearbyAmbulance(int count, AmbulanceType serviceType, AmbulanceStatusType status);
+    List<Ambulance> findNearbyAmbulance(Point src,int count, AmbulanceType serviceType, AmbulanceStatusType status);
 
     Ambulance registerAmbulance(Ambulance ambulance);
 

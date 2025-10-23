@@ -1,25 +1,63 @@
-const socket = new SockJS('/ws');
-const stompClient = Stomp.over(socket);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ambulance WebSocket Test</title>
+</head>
+<body>
+<h1>Ambulance WebSocket Test</h1>
 
-stompClient.connect({}, () => {
-  stompClient.subscribe('/topic/ambulance/45', (message) => {
-    const data = JSON.parse(message.body);
-    console.log("🚨 New Emergency Request:", data);
-  });
+<div>
+    <label>Ambulance ID:</label>
+    <input type="number" id="ambulanceId" value="101">
+    <button onclick="connectAmbulance()">Connect</button>
+</div>
 
-  stompClient.subscribe('/topic/request/123', (update) => {
-    const data = JSON.parse(update.body);
-    if (data.event === "ASSIGNED") {
-      alert("Request taken by ambulance " + data.assignedAmbulanceId);
+<div>
+    <h3>Notifications:</h3>
+    <ul id="notifications"></ul>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.2/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+<script>
+    let stompClient = null;
+    let ambulanceId = null;
+
+    function connectAmbulance() {
+        ambulanceId = document.getElementById('ambulanceId').value;
+        if (!ambulanceId) {
+            alert("Enter Ambulance ID");
+            return;
+        }
+
+        const socket = new SockJS('http://localhost:8000/ws'); // Replace with your /ws endpoint
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+
+            const topic = '/topic/ambulance' + ambulanceId;
+            stompClient.subscribe(topic, function (message) {
+                const notification = JSON.parse(message.body);
+                console.log('Received notification:', notification);
+
+                // Display notification
+                const list = document.getElementById('notifications');
+                const item = document.createElement('li');
+                item.textContent = `RequestID: ${notification.requestId}, Type: ${notification.serviceType}`;
+                list.appendChild(item);
+
+                // Automatically respond ACCEPT
+                stompClient.send("/app/ambulance/response", {}, JSON.stringify({
+                    ambulanceId: parseInt(ambulanceId),
+                    requestId: notification.requestId,
+                    response: "ACCEPT"
+                }));
+            });
+        });
     }
-  });
-});
-
-// When driver clicks Accept
-function acceptRequest(requestId) {
-  stompClient.send("/app/ambulance/response", {}, JSON.stringify({
-    requestId: requestId,
-    ambulanceId: 45,
-    response: "ACCEPT"
-  }));
-}
+</script>
+</body>
+</html>
