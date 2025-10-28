@@ -13,6 +13,8 @@ services:
   ambulance_service:
     image: sanjeev775/ambulance-service:latest
     container_name: spring_application
+    depends_on:
+      - db_container
     restart: unless-stopped
     env_file: "config.env"
     ports:
