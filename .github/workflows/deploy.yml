@@ -2,7 +2,7 @@ name: Ambulance Service
 
 on:
   push:
-    branches: [master]
+    branches: [cloud_project]
 
 jobs:
   build-and-deploy:
